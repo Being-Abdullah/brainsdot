@@ -1,55 +1,109 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Row, Col, Button, Alert } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
+import { useToast } from '@chakra-ui/react';
+
+
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
+// console.log("BACKEND URL : " , backendUrl)
 
 const FirebaseLogin = ({ className, ...rest }) => {
+  const toast = useToast();
   const navigate = useNavigate();
 
+  const handleLogin = async (values, { setErrors, setStatus, setSubmitting }) => {
+    try {
+      const response = await fetch(`${backendUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: values.username,
+          password: values.password,
+        }),
+      });
+
+      console.log(response);
+  
+      if (!response.ok) {
+        
+        toast({
+          title: 'Login failed',
+          description: 'Invalid username or password',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+          position: 'top',
+        });
+        //throw new Error('Invalid username or password');
+      }
+      else{
+      toast({
+        title: 'Login successful',
+        description: 'Redirecting to dashboard...',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      });
+      const data = await response.json();
+      const { access_token, userId } = data;
+      console.log('id',access_token,userId);
+  
+      // Set cookies using document.cookie
+      document.cookie = `accessToken=${access_token}; path=/;`;
+      document.cookie = `userId=${userId}; path=/;`;
+      
+      // Navigate to dashboard after successful login
+      navigate('/dashboard');
+    }
+    } catch (error) {
+      toast({
+        title: 'Login failed',
+        description: 'Something went wrongeee',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setStatus({ success: false });
+      setErrors({ submit: error.message || 'Something went wrong' });
+      setSubmitting(false);
+      
+    }
+  };
+  
   return (
     <React.Fragment>
+      
       <Formik
         initialValues={{
-          email: 'example@gmail.com',
+          username: 'username',
           password: '******',
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+          username: Yup.string().max(255).required('Username is required'),
           password: Yup.string().max(255).required('Password is required')
         })}
-        onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-          try {
-            // Check credentials
-            if (values.email === 'usman@gmail.com' && values.password === '123') {
-              navigate('/app/dashboard/default');
-            } else {
-              setStatus({ success: false });
-              setErrors({ submit: 'Invalid email or password' });
-              setSubmitting(false);
-            }
-          } catch (error) {
-            setStatus({ success: false });
-            setErrors({ submit: 'Something went wrong' });
-            setSubmitting(false);
-          }
-        }}
+        onSubmit={handleLogin}
       >
         {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit} className={className} {...rest}>
             <div className="form-group mb-3">
               <input
                 className="form-control"
-                label="Email Address / Username"
-                name="email"
+                label="Username"
+                name="username"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                type="email"
-                value={values.email}
+                type="text"
+                value={values.username}
               />
-              {touched.email && errors.email && <small className="text-danger form-text">{errors.email}</small>}
+              {touched.username && errors.username && <small className="text-danger form-text">{errors.username}</small>}
             </div>
             <div className="form-group mb-4">
               <input
@@ -64,16 +118,12 @@ const FirebaseLogin = ({ className, ...rest }) => {
               {touched.password && errors.password && <small className="text-danger form-text">{errors.password}</small>}
             </div>
 
-            {errors.submit && (
-              <Col sm={12}>
-                <Alert variant="danger">{errors.submit}</Alert>
-              </Col>
-            )}
+            
 
             <Row>
               <Col mt={2}>
                 <Button className="btn-block" color="primary" disabled={isSubmitting} size="large" type="submit" variant="primary">
-                  Signin
+                  Sign In
                 </Button>
               </Col>
             </Row>

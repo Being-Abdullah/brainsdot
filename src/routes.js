@@ -58,7 +58,7 @@ const routes = [
     routes: [
       {
         exact: 'true',
-        path: '/app/dashboard/default',
+        path: '/dashboard',
         element: lazy(() => import('./views/dashboard'))
       },
       {
@@ -68,13 +68,18 @@ const routes = [
       },
       {
         exact: 'true',
+        path: '/leads/data',
+        element: lazy(() => import('./views/ui-elements/basic/BasicButtons'))
+      },
+      {
+        exact: 'true',
         path: '/users',
         element: lazy(() => import('./views/ui-elements/basic/BasicBadges'))
       },
       {
         exact: 'true',
-        path: '/countries',
-        element: lazy(() => import('./views/ui-elements/basic/BasicBreadcrumb'))
+        path: '/keywords',
+        element: lazy(() => import('./views/ui-elements/basic/BasicCollapse'))
       },
       {
         exact: 'true',
@@ -84,7 +89,7 @@ const routes = [
       {
         exact: 'true',
         path: '/region',
-        element: lazy(() => import('./views/ui-elements/basic/BasicCollapse'))
+        element: lazy(() => import('./views/ui-elements/basic/BasicBreadcrumb'))
       },
       {
         exact: 'true',

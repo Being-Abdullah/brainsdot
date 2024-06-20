@@ -1,147 +1,215 @@
-import React from 'react';
-import { Container, Row, Col, Card, Table } from 'react-bootstrap'; // Corrected import statement
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  Button,
+  Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Box,
+  FormLabel,
+  Stack,
+  Flex,
+  useDisclosure,
+  Input,
+  useToast,
+  Select
+} from '@chakra-ui/react';
+import { FaUserPlus } from 'react-icons/fa';
+import axios from 'axios';
 
-// import LineChart from '../../../views/charts/nvd3-chart/chart/LineChart';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-import avatar1 from '../../../assets/images/user/avatar-1.jpg';
-import avatar2 from '../../../assets/images/user/avatar-2.jpg';
-import avatar3 from '../../../assets/images/user/avatar-3.jpg';
+const BasicCollapse = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [keywords, setKeywords] = useState([{ keyword: '', exclude: '' }]);
+  const [categories, setCategories] = useState([]);
+  const toast = useToast();
 
-const BasicBadges = () => {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/category`);
+        if (!response.data || response.status !== 200) {
+          throw new Error('Failed to fetch categories');
+        }
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch categories.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+          position: 'top-left',
+        });
+      }
+    };
+
+    fetchCategories();
+  }, [toast]);
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const resetForm = () => {
+    setSelectedCategoryId(null);
+    setKeywords([{ keyword: '', exclude: '' }]);
+  };
+
+  const handleKeywordChange = (index, key, value) => {
+    const updatedKeywords = [...keywords];
+    updatedKeywords[index][key] = value;
+    setKeywords(updatedKeywords);
+  };
+
+  const addKeywordField = () => {
+    setKeywords([...keywords, { keyword: '', exclude: '' }]);
+  };
+
+  const removeKeywordField = (index) => {
+    const updatedKeywords = [...keywords];
+    updatedKeywords.splice(index, 1);
+    setKeywords(updatedKeywords);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedCategoryId) {
+      toast({
+        title: 'Error',
+        description: 'Please select a category.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-left',
+      });
+      return;
+    }
+
+    try {
+      const keywordData = keywords.map(kw => ({
+        keywordData: kw.keyword,
+        exclude: kw.exclude,
+        categoryId: selectedCategoryId
+      }));
+
+      const response = await axios.post(`${backendUrl}/keyword`, keywordData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status !== 201) {
+        throw new Error('Failed to create keywords');
+      }
+
+      handleClose();
+      toast({
+        title: 'Success',
+        description: 'Keywords added successfully.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-left',
+      });
+    } catch (error) {
+      console.error('Error creating keywords:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Something went wrong',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position: 'top-left',
+      });
+    }
+  };
+
   return (
-    <Container fluid>
-      <Row className="justify-content-center">
-        <Col md={6} xxl={8}>
-          <Card className="Recent-Users">
-            <Card.Header>
-              <Card.Title as="h5">Recent Users</Card.Title>
-            </Card.Header>
-            <Card.Body className="px-0 py-2">
-            <Table responsive hover className="recent-users">
-                <tbody>
-                  <tr className="unread">
-                    <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Isabella Christensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />
-                        11 MAY 12:56
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar2} alt="activity-user" />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Mathilde Andersen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-red f-10 m-r-15" />
-                        11 MAY 10:35
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar3} alt="activity-user" />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Karla Sorensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />9 MAY 17:38
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar1} alt="activity-user" />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Ida Jorgensen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted f-w-300">
-                        <i className="fa fa-circle text-c-red f-10 m-r-15" />
-                        19 MAY 12:56
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="unread">
-                    <td>
-                      <img className="rounded-circle" style={{ width: '40px' }} src={avatar2} alt="activity-user" />
-                    </td>
-                    <td>
-                      <h6 className="mb-1">Albert Andersen</h6>
-                      <p className="m-0">Lorem Ipsum is simply dummy text of…</p>
-                    </td>
-                    <td>
-                      <h6 className="text-muted">
-                        <i className="fa fa-circle text-c-green f-10 m-r-15" />
-                        21 July 12:56
-                      </h6>
-                    </td>
-                    <td>
-                      <Link to="#" className="label theme-bg2 text-white f-12">
-                        Reject
-                      </Link>
-                      <Link to="#" className="label theme-bg text-white f-12">
-                        Approve
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <>
+      <Button
+        leftIcon={<Icon as={FaUserPlus} />}
+        colorScheme="blue"
+        size="md"
+        variant="solid"
+        borderRadius="full"
+        border="none"
+        boxShadow="xl"
+        _hover={{ bg: 'blue.600' }}
+        _active={{ bg: 'blue.700', transform: 'scale(0.98)' }}
+        transition="background-color 0.2s, transform 0.2s"
+        onClick={onOpen}
+      >
+        Add Keywords
+      </Button>
+      <Modal isOpen={isOpen} onClose={handleClose}>
+        <ModalOverlay />
+        <ModalContent maxW="600px">
+          <ModalHeader>Add Keywords</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack spacing="24px">
+              <Box>
+                <FormLabel htmlFor="category">Category</FormLabel>
+                <Select
+                  id="category"
+                  placeholder="Select category"
+                  value={selectedCategoryId || ''}
+                  onChange={(e) => setSelectedCategoryId(e.target.value)}
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              {keywords.map((keyword, index) => (
+                <Flex key={index} mb="8px" alignItems="center">
+                  <Input
+                    placeholder="Enter keyword"
+                    value={keyword.keyword}
+                    onChange={(e) => handleKeywordChange(index, 'keyword', e.target.value)}
+                    mr="8px"
+                  />
+                  <Input
+                    placeholder="Enter exclude"
+                    value={keyword.exclude}
+                    onChange={(e) => handleKeywordChange(index, 'exclude', e.target.value)}
+                    mr="8px"
+                  />
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => removeKeywordField(index)}
+                    flexShrink={0}
+                  >
+                    Remove
+                  </Button>
+                </Flex>
+              ))}
+              <Button size="sm" colorScheme="blue" onClick={addKeywordField}>
+                Add Keyword
+              </Button>
+            </Stack>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button colorScheme="green" onClick={handleSubmit} ml={3}>
+              Submit
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
-export default BasicBadges;
+export default BasicCollapse;

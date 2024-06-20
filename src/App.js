@@ -1,15 +1,13 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-
-// auth provider
-
 import routes, { renderRoutes } from './routes';
+import { UserProvider } from './views/ui-elements/basic/UserContext'; // Change here
 
 const App = () => {
   return (
-    <React.Fragment>
+    <UserProvider>
       <BrowserRouter basename={process.env.REACT_APP_BASE_NAME}>{renderRoutes(routes)}</BrowserRouter>
-    </React.Fragment>
+    </UserProvider>
   );
 };
 

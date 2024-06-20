@@ -1,3 +1,12 @@
+const getCookieValue = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+const parentUserId = Number(getCookieValue('userId'));
+console.log('id',parentUserId);
 const menuItems = {
   items: [
     {
@@ -11,7 +20,7 @@ const menuItems = {
           title: 'Dashboard',
           type: 'item',
           icon: 'feather icon-home',
-          url: '/app/dashboard/default'
+          url: '/dashboard'
         }
       ]
     },
@@ -50,8 +59,8 @@ const menuItems = {
       ]
     },
     {
-      id: 'others', // New group item for categories
-      title: 'Others', // Title for the dropdown
+      id: 'others',
+      title: 'Others',
       type: 'group',
       icon: 'feather icon-folder',
       children: [
@@ -63,29 +72,41 @@ const menuItems = {
           url: '/leads'
         },
         {
+          id: 'leads-data',
+          title: 'Leads-data',
+          type: 'item',
+          icon: 'feather icon-target',
+          url: '/leads/data'
+        },
+        {
           id: 'users',
           title: 'Users',
           type: 'item',
           icon: 'feather icon-user',
           url: '/users'
-        },
-        {
-          id: 'region',
-          title: 'Region',
-          type: 'item',
-          icon: 'feather icon-map',
-          url: '/region'
         }
-        // {
-        //   id: 'countries',
-        //   title: 'Countries',
-        //   type: 'item',
-        //   icon: 'feather icon-globe',
-        //   url: '/countries'
-        // }
       ]
     }
   ]
 };
+
+if (parentUserId == 1) {
+  menuItems.items.find(group => group.id === 'others').children.push(
+    {
+      id: 'region',
+      title: 'Region',
+      type: 'item',
+      icon: 'feather icon-map',
+      url: '/region'
+    },
+    {
+      id: 'keywords',
+      title: 'Keywords',
+      type: 'item',
+      icon: 'feather icon-globe',
+      url: '/keywords'
+    }
+  );
+}
 
 export default menuItems;
